@@ -1,4 +1,4 @@
-#include <cmath>
+#include <cstdlib>
 #include <iostream>
 #include <numeric>
 #include <string_view>
@@ -37,6 +37,9 @@ int main(int argc, char *argv[]) {
     std::cout << "Number of rectangles: " << stepsCount << " x " << stepsCount << std::endl;
     std::cout << "Target device: " << queue.get_device().get_info<sycl::info::device::name>() << std::endl;
 
+    uint64_t start = 0;
+    uint64_t end = 0;
+
     try {
         sycl::event event = queue.submit([&](sycl::handler &h) {
             auto buffer = resultBuffer.get_access<sycl::access::mode::write>(h);
@@ -54,18 +57,16 @@ int main(int argc, char *argv[]) {
         });
         queue.wait();
 
-        auto start = event.get_profiling_info<sycl::info::event_profiling::command_start>();
-        auto end = event.get_profiling_info<sycl::info::event_profiling::command_end>();
-        float computed = std::accumulate(result.begin(), result.end(), 0.f) * dx * dy;
-
-        std::cout << "Kernel time: " << (end - start) / 1e+6 << " ms" << std::endl;
-        std::cout << "Expected value: " << expected << std::endl;
-        std::cout << "Computed value: " << computed << std::endl;
-        std::cout << "Difference: " << std::abs(computed - expected) << std::endl;
-
-    } catch (std::exception e) {
+        start = event.get_profiling_info<sycl::info::event_profiling::command_start>();
+        end = event.get_profiling_info<sycl::info::event_profiling::command_end>();
+    } catch (std::exception &e) {
         std::cout << e.what() << std::endl;
     }
 
-    return 0;
+    float computed = std::accumulate(result.begin(), result.end(), 0.f) * dx * dy;
+
+    std::cout << "Kernel time: " << (end - start) / 1e+6 << " ms" << std::endl;
+    std::cout << "Expected value: " << expected << std::endl;
+    std::cout << "Computed value: " << computed << std::endl;
+    std::cout << "Difference: " << std::abs(computed - expected) << std::endl;
 }
