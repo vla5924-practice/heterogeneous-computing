@@ -28,13 +28,13 @@ int main(int argc, char *argv[]) {
     float dx = 1.f / stepsCount;
     float dy = 1.f / stepsCount;
 
-    size_t num_groups = stepsCount / groupSize + 1;
-    std::vector<float> result(num_groups * num_groups, 0);
+    size_t groupsCount = stepsCount / groupSize + 1;
+    std::vector<float> result(groupsCount * groupsCount, 0);
     sycl::buffer<float> resultBuffer(result.data(), result.size());
 
     sycl::queue queue = createDeviceQueueByType(deviceType);
 
-    std::cout << "Number of rectangles: " << stepsCount << "x" << stepsCount << std::endl;
+    std::cout << "Number of rectangles: " << stepsCount << " x " << stepsCount << std::endl;
     std::cout << "Target device: " << queue.get_device().get_info<sycl::info::device::name>() << std::endl;
 
     try {
