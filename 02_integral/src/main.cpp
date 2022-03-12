@@ -5,14 +5,7 @@
 
 #include <CL/sycl.hpp>
 
-sycl::queue createDeviceQueueByType(std::string_view deviceType) {
-    sycl::property_list props{sycl::property::queue::enable_profiling()};
-    if (deviceType == "cpu")
-        return {sycl::cpu_selector{}, props};
-    if (deviceType == "gpu")
-        return {sycl::gpu_selector{}, props};
-    return {sycl::default_selector{}, props};
-}
+#include "utils.hpp"
 
 int main(int argc, char *argv[]) {
     if (argc != 3) {
@@ -30,9 +23,8 @@ int main(int argc, char *argv[]) {
 
     size_t groupsCount = stepsCount / groupSize + 1;
     std::vector<float> result(groupsCount * groupsCount, 0);
-    sycl::buffer<float> resultBuffer(result.data(), result.size());
 
-    sycl::queue queue = createDeviceQueueByType(deviceType);
+    sycl::queue queue = utils::createDeviceQueueByType(deviceType);
 
     std::cout << "Number of rectangles: " << stepsCount << " x " << stepsCount << std::endl;
     std::cout << "Target device: " << queue.get_device().get_info<sycl::info::device::name>() << std::endl;
@@ -41,6 +33,8 @@ int main(int argc, char *argv[]) {
     uint64_t end = 0;
 
     try {
+        sycl::buffer<float> resultBuffer(result.data(), result.size());
+
         sycl::event event = queue.submit([&](sycl::handler &h) {
             auto buffer = resultBuffer.get_access<sycl::access::mode::write>(h);
             h.parallel_for(
