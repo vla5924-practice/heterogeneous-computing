@@ -24,8 +24,7 @@ static float vectorLength(const float *x, size_t n) {
     return std::sqrt(s);
 }
 
-static float normAbs(const std::vector<float> &x0, const std::vector<float> &x1) {
-    size_t n = x0.size();
+static float normAbs(const float *x0, const float *x1, size_t n) {
     float s = 0;
     for (size_t i = 0; i < n; i++) {
         s += (x0[i] - x1[i]) * (x0[i] - x1[i]);
@@ -33,8 +32,8 @@ static float normAbs(const std::vector<float> &x0, const std::vector<float> &x1)
     return std::sqrt(s);
 }
 
-static float normRel(const std::vector<float> &x0, const std::vector<float> &x1) {
-    return normAbs(x0, x1) / vectorLength(x0.data(), x0.size());
+static float normRel(const float *x0, const float *x1, size_t n) {
+    return normAbs(x0, x1, n) / vectorLength(x0, n);
 }
 
 static float deviationAbs(const float *a, const float *b, const float *x, int n) {
@@ -70,7 +69,7 @@ sycl::queue createDeviceQueueByType(std::string_view deviceType) {
 std::pair<std::vector<float>, std::vector<float>> generateEquationSystem(size_t rowsCount) {
     std::vector<float> matrix(rowsCount * rowsCount, 0.f);
     fillRandomly(matrix);
-    std::uniform_real_distribution<> urd(rowsCount * 2.5, rowsCount * 2.5 + 2.0);
+    std::uniform_real_distribution<> urd(rowsCount * 5.0, rowsCount * 5.0 + 2.0);
     for (size_t i = 0; i < rowsCount; i++)
         matrix[i * rowsCount + i] = urd(mersenneInstance());
     std::vector<float> col(rowsCount, 0.f);
@@ -78,8 +77,12 @@ std::pair<std::vector<float>, std::vector<float>> generateEquationSystem(size_t 
     return {matrix, col};
 }
 
+float norm(const float *x0, const float *x1, size_t n) {
+    return normRel(x0, x1, n);
+}
+
 float norm(const std::vector<float> &x0, const std::vector<float> &x1) {
-    return normRel(x0, x1);
+    return normRel(x0.data(), x1.data(), x0.size());
 }
 
 float deviation(const std::vector<float> &a, const std::vector<float> &b, const std::vector<float> &x) {
