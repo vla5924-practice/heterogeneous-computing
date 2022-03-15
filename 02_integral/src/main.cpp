@@ -1,3 +1,4 @@
+#include <cmath>
 #include <cstdlib>
 #include <iostream>
 #include <numeric>
@@ -16,8 +17,8 @@ int main(int argc, char *argv[]) {
     int stepsCount = std::atoi(argv[1]);
     std::string_view deviceType = argv[2];
 
-    constexpr float expected = 0.3868223;
     constexpr size_t groupSize = 16;
+    float expected = 2.f * std::pow(std::sin(0.5f), 2.f) * std::sin(1.f);
     float dx = 1.f / stepsCount;
     float dy = 1.f / stepsCount;
 
